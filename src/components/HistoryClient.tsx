@@ -224,7 +224,7 @@ export default function HistoryClient({ habits }: { habits: HabitOption[] }) {
             >
               <option value="All">All Pillars</option>
               <option value="Mental">🧠 Mental</option>
-              <option value="Spiritual">🧭 Spiritual</option>
+              <option value="Spiritual">🧿 Spiritual</option>
               <option value="Emotional">❤️ Emotional</option>
               <option value="Physical">💪 Physical</option>
             </select>

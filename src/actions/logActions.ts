@@ -95,14 +95,34 @@ export async function getTodayLogs() {
 
   await connectToDatabase();
 
-  // 1. Fetch current logs for today
+  // 1. Auto-close stale Pending logs from previous days → mark them as Missed
+  const stalePendingLogs = await DailyLog.find({
+    userId: user.id,
+    status: 'Pending',
+    date: { $lt: todayStr },
+  }).select('date');
+
+  if (stalePendingLogs.length > 0) {
+    // Collect unique dates that are affected so we can refresh their snapshots
+    const affectedDates = [...new Set(stalePendingLogs.map((l) => l.date))];
+
+    await DailyLog.updateMany(
+      { userId: user.id, status: 'Pending', date: { $lt: todayStr } },
+      { $set: { status: 'Missed', completionPercentage: 0 } }
+    );
+
+    // Refresh snapshot for every affected past date so analytics stay accurate
+    await Promise.all(affectedDates.map((date) => updateDailySnapshot(user.id, date)));
+  }
+
+  // 2. Fetch current logs for today
   let logs = await DailyLog.find({ userId: user.id, date: todayStr })
     .populate({
       path: 'habitId',
       model: MasterHabit,
     });
 
-  // 2. Cold Start: If no logs exist, generate them automatically (acting like cron just ran)
+  // 3. Cold Start: If no logs exist, generate them automatically (acting like cron just ran)
   if (logs.length === 0) {
     const activeHabits = await MasterHabit.find({ userId: user.id, active: true });
     

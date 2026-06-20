@@ -115,7 +115,7 @@ export default function MasterHabitsClient({ initialHabits }: { initialHabits: H
       </div>
 
       {/* Add Habit Inline Form (Notion Bar style) */}
-      <form onSubmit={handleCreate} className="bg-card border border-border rounded-lg p-4 flex flex-col sm:flex-row gap-3 shadow-xs items-end sm:items-center">
+      <form onSubmit={handleCreate} className="bg-card border border-border rounded-lg p-4 flex flex-col sm:flex-row gap-3 shadow-xs items-end">
         <div className="flex-1 w-full space-y-1">
           <label className="text-[10px] font-bold text-muted uppercase tracking-wider">Habit Name</label>
           <input
@@ -136,7 +136,7 @@ export default function MasterHabitsClient({ initialHabits }: { initialHabits: H
             className="w-full h-9 px-3 text-sm bg-hover border border-border rounded focus:outline-none focus:border-accent text-foreground cursor-pointer"
           >
             <option value="Mental">🧠 Mental</option>
-            <option value="Spiritual">🧭 Spiritual</option>
+            <option value="Spiritual">🧿 Spiritual</option>
             <option value="Emotional">❤️ Emotional</option>
             <option value="Physical">💪 Physical</option>
           </select>
@@ -219,7 +219,7 @@ export default function MasterHabitsClient({ initialHabits }: { initialHabits: H
                     <td className="px-4 py-3">
                       <span className={`pillar-tag ${getPillarColorClass(habit.pillar)}`}>
                         {habit.pillar === 'Mental' && '🧠 '}
-                        {habit.pillar === 'Spiritual' && '🧭 '}
+                        {habit.pillar === 'Spiritual' && '🧿 '}
                         {habit.pillar === 'Emotional' && '❤️ '}
                         {habit.pillar === 'Physical' && '💪 '}
                         {habit.pillar}

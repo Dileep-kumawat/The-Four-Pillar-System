@@ -242,7 +242,7 @@ export default function AnalyticsClient({ analytics }: AnalyticsClientProps) {
             <AlertTriangle size={16} />
             Missed Count by Pillar
           </h2>
-          <div className="h-64 w-full">
+          <div className="h-64 w-full" style={{ minHeight: 256 }}>
             <ResponsiveContainer width="100%" height="100%" debounce={100}>
               <BarChart data={missedPillarData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
@@ -268,7 +268,7 @@ export default function AnalyticsClient({ analytics }: AnalyticsClientProps) {
       {/* Failure Trend Chart */}
       <div className="bg-card border border-border rounded-lg p-5 shadow-xs">
         <h2 className="text-sm font-semibold text-muted mb-4">Habit Failure Trends (Past 30 Days missed logs count)</h2>
-        <div className="h-64 w-full">
+        <div className="h-64 w-full" style={{ minHeight: 256 }}>
           <ResponsiveContainer width="100%" height="100%" debounce={100}>
             <AreaChart
               data={analytics.failureTrends.past30Days}

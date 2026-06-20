@@ -317,9 +317,9 @@ export default function DashboardClient({ stats, trendData }: DashboardClientPro
         {/* Completion rate trend line */}
         <div className="bg-card border border-border rounded-lg p-5 shadow-xs lg:col-span-2">
           <h2 className="text-sm font-semibold text-muted mb-4">Overall Completion Trend (Past 30 Days)</h2>
-          <div className="h-64 w-full">
+          <div className="h-64 w-full" style={{ minHeight: 256 }}>
             {trendData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" debounce={50}>
                 <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
@@ -361,9 +361,9 @@ export default function DashboardClient({ stats, trendData }: DashboardClientPro
         {/* Pillars breakdown bar chart */}
         <div className="bg-card border border-border rounded-lg p-5 shadow-xs">
           <h2 className="text-sm font-semibold text-muted mb-4">Pillar Averages Breakdown</h2>
-          <div className="h-64 w-full">
+          <div className="h-64 w-full" style={{ minHeight: 256 }}>
             {trendData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" debounce={50}>
                 <BarChart
                   data={[
                     { name: 'Mental', score: stats.pillarScores.Mental, fill: 'var(--pillar-mental)' },
