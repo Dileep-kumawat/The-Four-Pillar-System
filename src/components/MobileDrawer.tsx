@@ -49,23 +49,28 @@ export default function MobileDrawer() {
       <aside className="relative flex flex-col w-72 max-w-[85vw] h-full bg-sidebar border-r border-border text-foreground shadow-2xl animate-in slide-in-from-left duration-250 select-none">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-2 overflow-hidden">
+          <Link
+            href="/"
+            onClick={() => setMobileSidebarOpen(false)}
+            className="flex items-center gap-2 overflow-hidden rounded px-1 py-0.5 hover:bg-hover transition-colors group"
+            title="Go to Home"
+          >
             {session?.user?.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={session.user.image}
                 alt={session.user.name || 'User'}
-                className="w-7 h-7 rounded-full border border-border"
+                className="w-7 h-7 rounded-full border border-border group-hover:ring-2 group-hover:ring-accent/40 transition-all"
               />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-semibold">
+              <div className="w-7 h-7 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-semibold group-hover:ring-2 group-hover:ring-accent/40 transition-all">
                 {session?.user?.name?.[0]?.toUpperCase() || 'U'}
               </div>
             )}
-            <span className="font-semibold text-sm truncate max-w-[120px]">
+            <span className="font-semibold text-sm truncate max-w-[120px] group-hover:text-foreground transition-colors">
               {session?.user?.name || 'Life OS'}
             </span>
-          </div>
+          </Link>
           <button
             onClick={() => setMobileSidebarOpen(false)}
             className="p-1 hover:bg-hover rounded text-muted hover:text-foreground transition-colors"

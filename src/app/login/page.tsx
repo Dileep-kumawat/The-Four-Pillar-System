@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { signIn } from 'next-auth/react';
-import { Loader2, Sparkles, Brain, Compass, Heart, Activity, Mail, User, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Loader2, Sparkles, Brain, Compass, Heart, Activity, Mail, User, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
@@ -63,11 +64,20 @@ export default function LoginPage() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[radial-gradient(circle_at_bottom_left,rgba(35,131,226,0.06),transparent_60%)] pointer-events-none" />
         
         {/* Top Branding */}
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-accent">
-            <Sparkles size={20} className="text-[#2eaadc]" />
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-accent">
+              <Sparkles size={20} className="text-[#2eaadc]" />
+            </div>
+            <span className="font-semibold text-lg tracking-tight text-zinc-100">The Four Pillar System</span>
           </div>
-          <span className="font-semibold text-lg tracking-tight text-zinc-100">The Four Pillar System</span>
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors group"
+          >
+            <ArrowLeft size={13} className="group-hover:-translate-x-0.5 transition-transform" />
+            Home
+          </Link>
         </div>
 
         {/* Core Showcase: The Four Pillars */}
@@ -161,7 +171,15 @@ export default function LoginPage() {
       </div>
 
       {/* Right Column: Authentication Card & Form */}
-      <div className="col-span-1 lg:col-span-7 xl:col-span-6 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-background">
+      <div className="col-span-1 lg:col-span-7 xl:col-span-6 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-background relative">
+        {/* Back to Home — top-left corner on mobile/all screens */}
+        <Link
+          href="/"
+          className="absolute top-6 left-6 flex items-center gap-1.5 text-xs font-medium text-muted hover:text-foreground transition-colors group lg:hidden"
+        >
+          <ArrowLeft size={13} className="group-hover:-translate-x-0.5 transition-transform" />
+          Home
+        </Link>
         <div className="w-full max-w-[400px] space-y-8">
           
           {/* Header & Title */}

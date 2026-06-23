@@ -4,9 +4,11 @@ import { NextResponse } from 'next/server';
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
 
-  // Public routes: auth pages and auth API callbacks
+  // Public routes: landing page, auth pages and auth API callbacks
   const publicPaths = ['/login', '/api/auth'];
-  const isPublic = publicPaths.some((p) => pathname.startsWith(p));
+  const isPublic =
+    pathname === '/' ||
+    publicPaths.some((p) => pathname.startsWith(p));
 
   // Cron endpoint - secured by CRON_SECRET header, not by session
   if (pathname.startsWith('/api/cron')) {

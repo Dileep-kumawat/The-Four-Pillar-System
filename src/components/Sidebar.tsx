@@ -80,26 +80,30 @@ export default function Sidebar() {
     <aside className="hidden md:flex flex-col w-60 bg-sidebar border-r border-border h-screen text-foreground transition-all duration-300 select-none">
       {/* Header / Profile */}
       <div className="flex items-center justify-between p-3 border-b border-border">
-        <div className="flex items-center gap-2 overflow-hidden">
+        <Link
+          href="/"
+          className="flex items-center gap-2 overflow-hidden rounded px-1 py-0.5 hover:bg-hover transition-colors group"
+          title="Go to Home"
+        >
           {session?.user?.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={session.user.image}
               alt={session.user.name || 'User'}
-              className="w-6 h-6 rounded-full border border-border bg-background"
+              className="w-6 h-6 rounded-full border border-border bg-background group-hover:ring-2 group-hover:ring-accent/40 transition-all"
             />
           ) : (
-            <div className="w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-semibold">
+            <div className="w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-semibold group-hover:ring-2 group-hover:ring-accent/40 transition-all">
               {session?.user?.name?.[0]?.toUpperCase() || 'U'}
             </div>
           )}
-          <span className="font-semibold text-sm truncate max-w-[120px]">
+          <span className="font-semibold text-sm truncate max-w-[120px] group-hover:text-foreground transition-colors">
             {session?.user?.name || 'My Life OS'}
           </span>
           <span className="text-[10px] text-accent border border-accent/30 bg-accent/10 px-1 rounded font-mono uppercase">
             Pro
           </span>
-        </div>
+        </Link>
         <button
           onClick={toggleSidebar}
           className="p-1 hover:bg-hover rounded text-muted hover:text-foreground transition-colors"
