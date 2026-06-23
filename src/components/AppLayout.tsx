@@ -14,9 +14,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
   
-  const isLoginPage = pathname === '/login';
+  const isPublicPage = pathname === '/login' || pathname === '/';
 
-  if (isLoginPage) {
+  if (isPublicPage) {
     return <div className="min-h-screen bg-background text-foreground">{children}</div>;
   }
 

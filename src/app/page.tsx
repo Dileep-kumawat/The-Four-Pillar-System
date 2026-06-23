@@ -1,23 +1,22 @@
-import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/authHelpers';
-import { getDashboardStats } from '@/actions/dashboardActions';
-import { getAnalyticsData } from '@/actions/analyticsActions';
-import DashboardClient from '@/components/DashboardClient';
+import LandingPageClient from '@/components/LandingPageClient';
 
 export const metadata = {
-  title: 'Dashboard - The Four Pillar System',
+  title: 'The Four Pillar System - Systemize Your Habits',
+  description: 'A premium habit operating system designed around four core pillars of human execution: Mental, Spiritual, Emotional, and Physical.',
 };
 
-export default async function DashboardPage() {
+export default async function LandingPage() {
   const user = await getSessionUser();
 
-  if (!user) {
-    redirect('/login');
-  }
+  // Convert the user to a plain object or match the expected props interface
+  const serializedUser = user 
+    ? {
+        name: user.name,
+        email: user.email,
+        image: user.image,
+      } 
+    : null;
 
-  // Fetch initial dashboard stats & trendData
-  const stats = await getDashboardStats();
-  const analytics = await getAnalyticsData();
-
-  return <DashboardClient stats={stats} trendData={analytics.trendData} />;
+  return <LandingPageClient user={serializedUser} />;
 }

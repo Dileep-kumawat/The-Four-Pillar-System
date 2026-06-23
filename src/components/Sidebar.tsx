@@ -29,7 +29,7 @@ export default function Sidebar() {
 
   const navItems = [
     { name: "Today's Tasks", path: '/today', icon: CheckSquare },
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Master Habits', path: '/master-habits', icon: ClipboardList },
     { name: 'Calendar', path: '/calendar', icon: Calendar },
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
