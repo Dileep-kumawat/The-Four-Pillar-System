@@ -22,6 +22,22 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Apply the persisted theme immediately on mount to prevent flash
+    try {
+      const stored = localStorage.getItem('four-pillar-store');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const savedTheme = parsed?.state?.theme;
+        const root = window.document.documentElement;
+        if (savedTheme === 'dark') {
+          root.classList.add('dark');
+        } else if (savedTheme === 'light') {
+          root.classList.remove('dark');
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
     setMounted(true);
   }, []);
 

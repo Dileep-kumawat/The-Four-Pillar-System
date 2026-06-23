@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface AppState {
   sidebarOpen: boolean;
@@ -13,15 +14,23 @@ interface AppState {
   setTheme: (theme: 'light' | 'dark') => void;
 }
 
-export const useStore = create<AppState>((set) => ({
-  sidebarOpen: true,
-  mobileSidebarOpen: false,
-  searchQuery: '',
-  theme: 'dark', // Default to Notion-like dark theme
-  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
-  toggleMobileSidebar: () => set((state) => ({ mobileSidebarOpen: !state.mobileSidebarOpen })),
-  setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
-  setSearchQuery: (query) => set({ searchQuery: query }),
-  setTheme: (theme) => set({ theme }),
-}));
+export const useStore = create<AppState>()(
+  persist(
+    (set) => ({
+      sidebarOpen: true,
+      mobileSidebarOpen: false,
+      searchQuery: '',
+      theme: 'dark', // Default to Notion-like dark theme
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      setSidebarOpen: (open) => set({ sidebarOpen: open }),
+      toggleMobileSidebar: () => set((state) => ({ mobileSidebarOpen: !state.mobileSidebarOpen })),
+      setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
+      setSearchQuery: (query) => set({ searchQuery: query }),
+      setTheme: (theme) => set({ theme }),
+    }),
+    {
+      name: 'four-pillar-store', // localStorage key
+      partialize: (state) => ({ theme: state.theme }), // Only persist the theme
+    }
+  )
+);
