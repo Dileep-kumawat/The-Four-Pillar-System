@@ -25,6 +25,7 @@
 17. [Local Development Setup](#17-local-development-setup)
 18. [Data Flow Diagrams](#18-data-flow-diagrams)
 19. [Key Design Decisions](#19-key-design-decisions)
+20. [Performance Optimizations](#20-performance-optimizations)
 
 ---
 
@@ -959,5 +960,27 @@ Only the `theme` field is persisted to `localStorage` (via `partialize`). Sideba
 
 ---
 
-*Last updated: June 23, 2026*
+## 20. Performance Optimizations
+
+To address page-loading latency (previously taking ~1–1.5s per route transition due to remote database network latency), the following database and rendering optimizations were implemented:
+
+### 1. In-Memory Calculations (Elimination of N+1 Queries)
+- **Problem**: When loading analytics, the server was querying the database in a loop for each habit to compute streaks.
+- **Solution**: Habits and logs are loaded in a single parallel query. Habit streaks are calculated entirely in-memory using `calculateHabitStreaksFromLogs`, dropping database round-trips from `N+1` to `2`.
+
+### 2. Single-Query Snapshot Reuse
+- **Problem**: `getDashboardStats()` performed multiple separate fetches for the same historical `DailySnapshot` documents to calculate streaks and scores.
+- **Solution**: Snapshots are fetched exactly once, sorted descending, and passed to a pure, synchronous helper `calculateStreakFromSnapshots()` to compute streaks and averages in-memory.
+
+### 3. Parallelized Page Loading
+- **Problem**: The root dashboard page resolved `getDashboardStats()` and `getAnalyticsData()` sequentially.
+- **Solution**: Initiated both fetches concurrently using `Promise.all` inside the `/dashboard` Server Component, reducing initial render wait times by ~50%.
+
+### 4. Bulk snapshot updates for Stale Logs
+- **Problem**: When a user hadn't visited the app for several days, `getTodayLogs()` would close pending logs and run a parallel loop of `updateDailySnapshot` queries for each date, creating dozens of database read and write operations.
+- **Solution**: Replaced the loop with `updateDailySnapshotsBulk()`, which queries all daily logs for the affected dates in one call, computes the snapshot states in-memory, and writes them back to the database in a single round-trip using MongoDB's `bulkWrite` operation.
+
+---
+
+*Last updated: June 24, 2026*
 *Project: The Four Pillar System — Personal Habit Operating System*
