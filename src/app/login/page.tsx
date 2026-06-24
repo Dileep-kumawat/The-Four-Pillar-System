@@ -27,11 +27,12 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email: email.trim().toLowerCase(),
         name: activeTab === 'signup' ? name.trim() : '',
-        callbackUrl: '/today',
-        redirect: true,
+        redirect: false,
       });
       if (result?.error) {
         setError('Authentication failed. Please check your credentials and try again.');
+      } else {
+        window.location.href = '/today';
       }
     } catch (err) {
       console.error('Authentication error:', err);
