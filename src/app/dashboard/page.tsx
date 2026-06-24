@@ -15,9 +15,11 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  // Fetch initial dashboard stats & trendData
-  const stats = await getDashboardStats();
-  const analytics = await getAnalyticsData();
+  // Fetch initial dashboard stats & trendData in parallel
+  const [stats, analytics] = await Promise.all([
+    getDashboardStats(),
+    getAnalyticsData(),
+  ]);
 
   return <DashboardClient stats={stats} trendData={analytics.trendData} />;
 }

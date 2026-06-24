@@ -25,12 +25,8 @@ function getLocalDateString(timezone: string = 'UTC', daysOffset: number = 0) {
   }
 }
 
-// Function to calculate overall user streak (days with completion rate >= 50%)
-export async function calculateStreak(userId: string, timezone: string = 'UTC') {
-  await connectToDatabase();
-  
-  // Fetch snapshots sorted by date descending
-  const snapshots = await DailySnapshot.find({ userId }).sort({ date: -1 });
+// Pure function to calculate overall user streak (days with completion rate >= 50%) from pre-loaded snapshots
+function calculateStreakFromSnapshots(snapshots: any[], timezone: string = 'UTC') {
   if (snapshots.length === 0) {
     return { currentStreak: 0, longestStreak: 0 };
   }
@@ -115,6 +111,13 @@ export async function calculateStreak(userId: string, timezone: string = 'UTC') 
   return { currentStreak, longestStreak };
 }
 
+// Wrapper for backward compatibility if needed elsewhere
+export async function calculateStreak(userId: string, timezone: string = 'UTC') {
+  await connectToDatabase();
+  const snapshots = await DailySnapshot.find({ userId }).sort({ date: -1 });
+  return calculateStreakFromSnapshots(snapshots, timezone);
+}
+
 export async function getDashboardStats() {
   const user = await requireSessionUser();
   const userTimezone = (user as any).timezone || 'UTC';
@@ -123,11 +126,11 @@ export async function getDashboardStats() {
 
   await connectToDatabase();
 
-  // 1. Calculate streaks
-  const { currentStreak, longestStreak } = await calculateStreak(user.id, userTimezone);
+  // 1. Fetch all snapshots sorted by date descending (needed for streak check and calculations)
+  const snapshots = await DailySnapshot.find({ userId: user.id }).sort({ date: -1 });
 
-  // 2. Fetch all snapshots
-  const snapshots = await DailySnapshot.find({ userId: user.id });
+  // 2. Calculate streaks using the pre-fetched snapshots
+  const { currentStreak, longestStreak } = calculateStreakFromSnapshots(snapshots, userTimezone);
 
   // 3. Compute overall Life Score (overall average completion percentage of all historical snapshots)
   let overallSum = 0;

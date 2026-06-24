@@ -30,10 +30,9 @@ interface HabitStreakInfo {
   longestStreak: number;
 }
 
-// Calculate streaks for a single habit
-async function getHabitStreaks(habitId: string, timezone: string = 'UTC'): Promise<HabitStreakInfo> {
-  const logs = await DailyLog.find({ habitId }).sort({ date: -1 });
-  if (logs.length === 0) return { currentStreak: 0, longestStreak: 0 };
+// Calculate streaks for a single habit in-memory using pre-fetched logs
+function calculateHabitStreaksFromLogs(habitLogs: any[], timezone: string = 'UTC'): HabitStreakInfo {
+  if (habitLogs.length === 0) return { currentStreak: 0, longestStreak: 0 };
 
   const todayStr = getLocalDateString(timezone);
   const yesterdayStr = getLocalDateString(timezone, -1);
@@ -43,7 +42,7 @@ async function getHabitStreaks(habitId: string, timezone: string = 'UTC'): Promi
   let runningStreak = 0;
 
   // Sort logs by date ascending for longest streak calculation
-  const sortedLogs = [...logs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const sortedLogs = [...habitLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   let prevDate: Date | null = null;
   for (const log of sortedLogs) {
@@ -74,7 +73,7 @@ async function getHabitStreaks(habitId: string, timezone: string = 'UTC'): Promi
 
   // Calculate current streak
   const logsMap = new Map<string, string>();
-  for (const log of logs) {
+  for (const log of habitLogs) {
     logsMap.set(log.date, log.status);
   }
 
@@ -112,9 +111,12 @@ export async function getAnalyticsData() {
   
   await connectToDatabase();
 
-  // 1. Fetch habits and logs
-  const habits = await MasterHabit.find({ userId: user.id });
-  const logs = await DailyLog.find({ userId: user.id });
+  // 1. Fetch habits, logs, and snapshots in parallel
+  const [habits, logs, snapshots] = await Promise.all([
+    MasterHabit.find({ userId: user.id }),
+    DailyLog.find({ userId: user.id }),
+    DailySnapshot.find({ userId: user.id }).sort({ date: 1 }),
+  ]);
 
   // 2. Build Leaderboard & Streak analysis per habit
   const leaderboard = [];
@@ -129,7 +131,7 @@ export async function getAnalyticsData() {
       completionRate = Math.round((completedLogs / totalLogs) * 100);
     }
 
-    const { currentStreak, longestStreak } = await getHabitStreaks(habit._id.toString(), userTimezone);
+    const { currentStreak, longestStreak } = calculateHabitStreaksFromLogs(habitLogs, userTimezone);
 
     leaderboard.push({
       id: habit._id.toString(),
@@ -188,10 +190,7 @@ export async function getAnalyticsData() {
   });
 
   // C. Failure Trends (Weekly/Monthly failure rates)
-  // Let's group failures by weeks (past 8 weeks) and months (past 6 months)
   const getFailureTrends = () => {
-    const now = new Date();
-    
     // Past 30 days daily trend
     const past30Days = [];
     for (let i = 29; i >= 0; i--) {
@@ -211,7 +210,6 @@ export async function getAnalyticsData() {
   const failureTrends = getFailureTrends();
 
   // 4. Trend graphs: completion rates over last 30 days
-  const snapshots = await DailySnapshot.find({ userId: user.id }).sort({ date: 1 });
   const trendData = snapshots.slice(-30).map((snap) => ({
     date: snap.date.split('-').slice(1).join('-'), // "MM-DD"
     completionRate: snap.completionRate,

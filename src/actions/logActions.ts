@@ -88,6 +88,99 @@ export async function updateDailySnapshot(userId: string, date: string) {
   );
 }
 
+// Function to update daily snapshot data for a given user and multiple dates in bulk
+export async function updateDailySnapshotsBulk(userId: string, dates: string[]) {
+  if (dates.length === 0) return;
+  await connectToDatabase();
+
+  // Find all logs for the user on these dates
+  const logs = await DailyLog.find({ userId, date: { $in: dates } }).populate({
+    path: 'habitId',
+    model: MasterHabit,
+  });
+
+  // Group logs by date
+  const logsByDate = new Map<string, typeof logs>();
+  for (const log of logs) {
+    if (!logsByDate.has(log.date)) {
+      logsByDate.set(log.date, []);
+    }
+    logsByDate.get(log.date)!.push(log);
+  }
+
+  const bulkOps = [];
+  const datesToDelete = [];
+
+  for (const date of dates) {
+    const dateLogs = logsByDate.get(date) || [];
+    if (dateLogs.length === 0) {
+      datesToDelete.push(date);
+      continue;
+    }
+
+    let completedCount = 0;
+    let missedCount = 0;
+    let totalScore = 0;
+
+    const pillarSums: Record<string, { sum: number; count: number }> = {
+      Mental: { sum: 0, count: 0 },
+      Spiritual: { sum: 0, count: 0 },
+      Emotional: { sum: 0, count: 0 },
+      Physical: { sum: 0, count: 0 },
+    };
+
+    for (const log of dateLogs) {
+      const status = log.status;
+      const score = log.completionPercentage;
+      const habit = log.habitId as any;
+
+      if (status === 'Completed') completedCount++;
+      if (status === 'Missed') missedCount++;
+
+      totalScore += score;
+
+      if (habit && habit.pillar) {
+        const pillar = habit.pillar;
+        if (pillarSums[pillar]) {
+          pillarSums[pillar].sum += score;
+          pillarSums[pillar].count++;
+        }
+      }
+    }
+
+    const completionRate = Math.round(totalScore / dateLogs.length);
+    const pillarScores = {
+      Mental: pillarSums.Mental.count > 0 ? Math.round(pillarSums.Mental.sum / pillarSums.Mental.count) : 0,
+      Spiritual: pillarSums.Spiritual.count > 0 ? Math.round(pillarSums.Spiritual.sum / pillarSums.Spiritual.count) : 0,
+      Emotional: pillarSums.Emotional.count > 0 ? Math.round(pillarSums.Emotional.sum / pillarSums.Emotional.count) : 0,
+      Physical: pillarSums.Physical.count > 0 ? Math.round(pillarSums.Physical.sum / pillarSums.Physical.count) : 0,
+    };
+
+    bulkOps.push({
+      updateOne: {
+        filter: { userId, date },
+        update: {
+          $set: {
+            completionRate,
+            pillarScores,
+            completedCount,
+            missedCount,
+          }
+        },
+        upsert: true
+      }
+    });
+  }
+
+  if (datesToDelete.length > 0) {
+    await DailySnapshot.deleteMany({ userId, date: { $in: datesToDelete } });
+  }
+
+  if (bulkOps.length > 0) {
+    await DailySnapshot.bulkWrite(bulkOps);
+  }
+}
+
 export async function getTodayLogs() {
   const user = await requireSessionUser();
   const userTimezone = (user as any).timezone || 'UTC';
@@ -111,8 +204,8 @@ export async function getTodayLogs() {
       { $set: { status: 'Missed', completionPercentage: 0 } }
     );
 
-    // Refresh snapshot for every affected past date so analytics stay accurate
-    await Promise.all(affectedDates.map((date) => updateDailySnapshot(user.id, date)));
+    // Refresh snapshots in bulk for all affected past dates so analytics stay accurate
+    await updateDailySnapshotsBulk(user.id, affectedDates);
   }
 
   // 2. Fetch current logs for today
