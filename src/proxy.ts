@@ -4,11 +4,19 @@ import { NextResponse } from 'next/server';
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
 
-  // Public routes: landing page, auth pages and auth API callbacks
-  const publicPaths = ['/login', '/api/auth'];
+  // Public routes: landing page, auth pages, auth API callbacks, and PWA assets
+  const publicPaths = [
+    '/login',
+    '/api/auth',
+    '/sw.js',
+    '/manifest.json',
+  ];
   const isPublic =
     pathname === '/' ||
-    publicPaths.some((p) => pathname.startsWith(p));
+    publicPaths.some((p) => pathname.startsWith(p)) ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.svg') ||
+    pathname.endsWith('.ico');
 
   // Cron endpoint - secured by CRON_SECRET header, not by session
   if (pathname.startsWith('/api/cron')) {
@@ -24,5 +32,8 @@ export const proxy = auth((req) => {
 });
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|public).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|public|sw\\.js|manifest\\.json|.*\\.png$|.*\\.svg$|.*\\.ico$).*)',
+  ],
 };
+
