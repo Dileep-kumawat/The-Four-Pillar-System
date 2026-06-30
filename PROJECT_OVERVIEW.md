@@ -26,6 +26,7 @@
 18. [Data Flow Diagrams](#18-data-flow-diagrams)
 19. [Key Design Decisions](#19-key-design-decisions)
 20. [Performance Optimizations](#20-performance-optimizations)
+21. [Progressive Web App (PWA)](#21-progressive-web-app-pwa)
 
 ---
 
@@ -111,6 +112,13 @@ The UI is heavily inspired by **Notion**:
 |---|---|---|
 | **Zustand** | ^5.0.14 | Global client state (sidebar, theme) |
 
+### PWA (Progressive Web App)
+
+| Technology | Role |
+|---|---|
+| **Web App Manifest** | PWA identity, theme customization, display settings |
+| **Service Worker** | Client-side caching, offline support, push notifications |
+
 ### Deployment
 
 | Technology | Role |
@@ -133,11 +141,12 @@ The UI is heavily inspired by **Notion**:
 The 4 Pillar system/
 ├── src/
 │   ├── app/                        # Next.js App Router
-│   │   ├── layout.tsx              # Root layout (wraps all pages)
+│   │   ├── layout.tsx              # Root layout (wraps all pages, loads manifest)
 │   │   ├── page.tsx                # Landing page route (/)
 │   │   ├── globals.css             # Global styles + CSS variables
 │   │   ├── global-error.tsx        # Global error boundary
 │   │   ├── not-found.tsx           # 404 page
+│   │   ├── manifest.json           # PWA Web App Manifest settings
 │   │   │
 │   │   ├── dashboard/
 │   │   │   └── page.tsx            # /dashboard — Dashboard page (protected)
@@ -177,7 +186,8 @@ The 4 Pillar system/
 │   │   ├── CalendarClient.tsx      # Calendar heatmap UI
 │   │   ├── AnalyticsClient.tsx     # Analytics charts + leaderboard
 │   │   ├── HistoryClient.tsx       # History table with filters + export
-│   │   └── SettingsClient.tsx      # Settings form (profile, theme, timezone)
+│   │   ├── SettingsClient.tsx      # Settings form (profile, theme, timezone)
+│   │   └── ServiceWorkerRegister.tsx # Client-side registration of PWA Service Worker
 │   │
 │   ├── actions/                    # Next.js Server Actions
 │   │   ├── habitActions.ts         # getMasterHabits, createHabit, renameHabit, toggleHabitStatus
@@ -204,6 +214,7 @@ The 4 Pillar system/
 │   └── proxy.ts                    # (utility proxy)
 │
 ├── public/                         # Static assets
+│   └── sw.js                       # PWA Custom Service Worker script
 ├── .env.local                      # Environment variables (NOT committed to git)
 ├── vercel.json                     # Vercel cron job configuration
 ├── next.config.ts                  # Next.js configuration
@@ -982,5 +993,33 @@ To address page-loading latency (previously taking ~1–1.5s per route transitio
 
 ---
 
-*Last updated: June 24, 2026*
+## 21. Progressive Web App (PWA)
+
+To make **The Four Pillar System** a fully installable, mobile-friendly personal life operating system, a custom Progressive Web App (PWA) layer was implemented.
+
+### PWA Components
+
+1. **Web App Manifest (`src/app/manifest.json`)**:
+   - Configures the app name (`The Four Pillar System`), short name (`4 Pillars`), theme color (`#191919`), and start URL (`/`).
+   - Configures the app to run in `standalone` display mode, hiding the browser UI for a native-app-like experience.
+   - Points to standard PWA icons (`192x192` and `512x512`).
+
+2. **Service Worker (`public/sw.js`)**:
+   - **Pre-caching**: Caches critical application shells (`/` page, icons) during installation.
+   - **Cache-first for Static Assets**: Intercepts requests for static resources (`_next/static/*`) and serves them from cache to minimize database/network overhead.
+   - **Network-first with Offline Fallback**: Intercepts navigation requests, attempts to fetch a fresh version from the network, caches the result, and falls back to cached resources or a custom offline warning if there is no internet connection.
+   - **Bypass Rule**: Automatically bypasses caching for API calls (`/api/*`), Webpack HMR, and other non-GET mutations.
+   - **Push Notifications**: Listeners for `push` events and displays background system notifications.
+   - **Notification Click Handler**: Dynamically focuses existing application windows or opens new ones to match the notification context.
+
+3. **Service Worker Register (`src/components/ServiceWorkerRegister.tsx`)**:
+   - A client-side wrapper component that executes inside the browser to register `sw.js` under the root (`/`) scope, ensuring updates check on mount.
+   - Registered once in `src/app/layout.tsx` to wrap the client-side lifecycle.
+
+4. **Public Route Access (`src/proxy.ts`)**:
+   - Allows standard PWA paths such as `/manifest.json`, `/sw.js`, and icon images to bypass standard authentication gates, ensuring the service worker installs and loads without redirects.
+
+---
+
+*Last updated: June 30, 2026*
 *Project: The Four Pillar System — Personal Habit Operating System*

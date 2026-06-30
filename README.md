@@ -38,6 +38,7 @@
 | 🌓 **Dark / Light Mode** | Notion-inspired UI that persists your theme preference |
 | 📤 **CSV / Excel Export** | Full history export for offline analysis |
 | 🔐 **Dual Auth** | Google OAuth + passwordless email sign-in |
+| 📱 **Progressive Web App (PWA)** | Fully installable app with custom service worker caching, offline fallback, and push notifications |
 
 <br/>
 
@@ -139,6 +140,13 @@ No setup required — sign in with Google or your email and start tracking immed
 | **MongoDB Atlas** | Cloud database |
 | **Vercel Cron Jobs** | Midnight automation trigger |
 
+### PWA & Service Worker
+
+| Technology | Role |
+|-----------|------|
+| **Web App Manifest** | App metadata, icons, standalone display mode config |
+| **Service Worker** | Pre-caching, cache-first for static assets, network-first with offline fallback, and push notification handlers |
+
 <br/>
 
 ---
@@ -212,8 +220,9 @@ Habit Rate     = (Completed logs / Total logs) x 100
 The 4 Pillar system/
 ├── src/
 │   ├── app/                        # Next.js App Router
-│   │   ├── layout.tsx              # Root layout
+│   │   ├── layout.tsx              # Root layout (loads manifest)
 │   │   ├── page.tsx                # Landing page (/)
+│   │   ├── manifest.json           # PWA Web App Manifest
 │   │   ├── globals.css             # Global styles + CSS variables
 │   │   ├── dashboard/page.tsx      # /dashboard (protected)
 │   │   ├── today/page.tsx          # /today (protected)
@@ -233,6 +242,7 @@ The 4 Pillar system/
 │   │   ├── TopBar.tsx              # Top bar (search, theme, mobile menu)
 │   │   ├── MobileDrawer.tsx        # Mobile slide-out drawer
 │   │   ├── ThemeProvider.tsx       # Dark/light theme applicator
+│   │   ├── ServiceWorkerRegister.tsx # Registers service worker client-side
 │   │   └── *Client.tsx             # Page-level client components
 │   │
 │   ├── actions/                    # Next.js Server Actions
@@ -256,7 +266,7 @@ The 4 Pillar system/
 │   ├── store/useStore.ts           # Zustand global store
 │   └── auth.ts                     # NextAuth configuration
 │
-├── public/                         # Static assets
+├── public/                         # Static assets (including sw.js)
 ├── vercel.json                     # Vercel cron job config
 ├── next.config.ts
 ├── tsconfig.json
